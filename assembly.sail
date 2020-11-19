@@ -12,4 +12,5 @@ val decode : bits(32) -> option(ast) effect pure /* decode function */
 union clause ast = ITYPE : (bits(12), regbits, regbits, iop)
 
 
+
 end ast /* end scattered ast definition */
