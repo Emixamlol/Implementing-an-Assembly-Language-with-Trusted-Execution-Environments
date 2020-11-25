@@ -59,14 +59,32 @@ function clause decode imm : bits(12) @ rs1 : regbits @ 0b010 @ rd : regbits @ 0
 /* S-TYPE instructions */
 union clause ast = STYPE : (bits(7), regbits, regbits, bits(5), sop)
 
+function clause decode imm2 : bits(7) @ rs2 : regbits @ rs1 : regbits @ 0b010 @ imm1 : bits(5) @ 0b0100011
+    = Some(STYPE(imm2, rs2, rs1, imm1, SW))
+
 /* B-TYPE instructions */
 union clause ast = BTYPE : (bits(1), bits(6), regbits, regbits, bits(4), bits(1), bop)
+
+function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ 0b000 @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
+    = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BEQ))
+
+function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ 0b001 @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
+    = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BNE))
 
 /* U-TYPE instructions */
 union clause ast = UTYPE : (bits(20), regbits, uop)
 
+function clause decode imm : bits(20) @ rd : regbits @ 0b0110111
+    = Some(UTYPE(imm, rd, LUI))
+
+function clause decode imm : bits(20) @ rd : regbits @ 0b0010111
+    = Some(UTYPE(imm, rd, AUIPC))
+
 /* J-TYPE instructions */
-union clause ast = JTYPE : (bits(1), bits(10), bits(1), bits(9), regbits, jop)
+union clause ast = JTYPE : (bits(1), bits(10), bits(1), bits(8), regbits, jop)
+
+function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 : bits(8) @ rd : regbits @ 0b1101111
+    = Some(JTYPE(imm4, imm1, imm2, imm3, rd, JAL))
 
 
 end ast /* end scattered ast definition */
