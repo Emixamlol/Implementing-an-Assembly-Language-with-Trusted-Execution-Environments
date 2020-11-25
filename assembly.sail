@@ -11,25 +11,25 @@ val decode : bits(32) -> option(ast) effect pure /* decode function */
 /* R-TYPE instruction */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ ADD @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, ADD))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ AND @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b111 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, AND))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ OR @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, OR))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ XOR @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, XOR))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ MUL @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, MUL))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ DIV @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, DIV))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ REM @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, REM))
 
 /* I-TYPE instruction */
