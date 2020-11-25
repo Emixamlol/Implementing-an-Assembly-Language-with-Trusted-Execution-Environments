@@ -1,7 +1,7 @@
 default Order dec
 
 $include <prelude.sail>
-$include "instructionss.sail"
+$include "instructions.sail"
 
 type regbits = bits(5)
 
