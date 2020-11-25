@@ -1,14 +1,14 @@
 default Order dec
 
 $include <prelude.sail>
-$include "instructions.sail"
+$include "instructionss.sail"
 
 type regbits = bits(5)
 
 scattered union ast /* begin scattered ast definition */
 val decode : bits(32) -> option(ast) effect pure /* decode function */
 
-/* R-TYPE instruction */
+/* R-TYPE instructions */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
 
 function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0110011
@@ -32,19 +32,40 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b100 @ rd : 
 function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, REM))
 
-/* I-TYPE instruction */
+/* I-TYPE instructions */
 union clause ast = ITYPE : (bits(12), regbits, regbits, iop)
 
-/* S-TYPE instruction */
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, ADDI))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b010 @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, SLTI))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b111 @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, ANDI))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, ORI))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, XORI))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b1100111
+    = Some(ITYPE(imm, rs1, rd, JALR))
+
+function clause decode imm : bits(12) @ rs1 : regbits @ 0b010 @ rd : regbits @ 0b0000011
+    = Some(ITYPE(imm, rs1, rd, LW))
+
+/* S-TYPE instructions */
 union clause ast = STYPE : (bits(7), regbits, regbits, bits(5), sop)
 
-/* B-TYPE instruction */
+/* B-TYPE instructions */
 union clause ast = BTYPE : (bits(1), bits(6), regbits, regbits, bits(4), bits(1), bop)
 
-/* U-TYPE instruction */
+/* U-TYPE instructions */
 union clause ast = UTYPE : (bits(20), regbits, uop)
 
-/* J-TYPE instruction */
+/* J-TYPE instructions */
 union clause ast = JTYPE : (bits(1), bits(10), bits(1), bits(9), regbits, jop)
 
 
