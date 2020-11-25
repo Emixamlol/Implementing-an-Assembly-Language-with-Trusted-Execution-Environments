@@ -1,22 +1,21 @@
 $include <prelude.sail>
 
-/* R-TYPE commands */
+/* R-TYPE instructions */
 enum rop = {ADD, AND, OR, XOR, MUL, DIV, REM} /* NOP = ADDI, x0, x0, 0 */
-/* compile time error: "Cannot create enum rop, type name is already bound" */
 
-/* I-TYPE commands */
+/* I-TYPE instructions */
 enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW}
 
-/* S-TYPE commands */
+/* S-TYPE instructions */
 enum sop = {SW}
 
-/* B-TYPE commands */
+/* B-TYPE instructions */
 enum bop = {BEQ, BNE}
 
-/* U-TYPE commands */
+/* U-TYPE instructions */
 enum uop = {LUI, AUIPC}
 
-/* J-TYPE commands */
+/* J-TYPE instructions */
 enum jop = {JAL}
 
 /* mappings */
