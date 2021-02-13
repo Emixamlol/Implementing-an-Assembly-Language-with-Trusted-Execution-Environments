@@ -3,10 +3,14 @@ default Order dec
 $include <prelude.sail>
 $include "instructions.sail"
 
+/* types */
+type xlen : Int = 32
+type xlenbits : Type = bits(xlen)
 type regbits = bits(5)
 
 scattered union ast /* begin scattered ast definition */
-val decode : bits(32) -> option(ast) effect pure /* decode function */
+val decode : xlenbits -> option(ast) effect pure /* decode function */
+val execute : ast -> unit effect {rmem, rreg, wreg} /* execute function */
 
 /* R-TYPE instructions */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
