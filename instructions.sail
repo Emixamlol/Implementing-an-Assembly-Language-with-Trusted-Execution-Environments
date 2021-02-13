@@ -22,31 +22,31 @@ enum jop = {JAL}
 
 mapping encdec_rop : rop <-> bits(3) = {
     ADD <-> 0b000,
-    AND <-> 0b001,
-    OR  <-> 0b010,
-    XOR <-> 0b011,
-    MUL <-> 0b100,
-    DIV <-> 0b101,
-    REM <-> 0b111
+    AND <-> 0b111,
+    OR  <-> 0b110,
+    XOR <-> 0b100,
+    MUL <-> 0b000,
+    DIV <-> 0b100,
+    REM <-> 0b110
 }
 
 mapping encdec_iop : iop <-> bits(3) = {
     ADDI    <-> 0b000,
-    SLTI    <-> 0b001,
-    ANDI    <-> 0b010,
-    ORI     <-> 0b011,
+    SLTI    <-> 0b010,
+    ANDI    <-> 0b111,
+    ORI     <-> 0b110,
     XORI    <-> 0b100,
-    JALR    <-> 0b101,
-    LW      <-> 0b111
+    JALR    <-> 0b000,
+    LW      <-> 0b010
 }
 
-mapping encdec_sop : sop <-> bits(1) = {
-    SW <-> 0b0
+mapping encdec_sop : sop <-> bits(3) = {
+    SW <-> 0b010
 }
 
-mapping encdec_bop : bop <-> bits(1) = {
-    BEQ <-> 0b0,
-    BNE <-> 0b1
+mapping encdec_bop : bop <-> bits(3) = {
+    BEQ <-> 0b000,
+    BNE <-> 0b001
 }
 
 mapping encdec_uop : uop <-> bits(1) = {
