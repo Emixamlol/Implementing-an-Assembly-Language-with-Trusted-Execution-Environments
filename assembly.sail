@@ -190,7 +190,7 @@ union clause ast = JTYPE : (bits(1), bits(10), bits(1), bits(8), regbits, jop)
 function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 : bits(8) @ rd : regbits @ 0b1101111
     = Some(JTYPE(imm4, imm1, imm2, imm3, rd, JAL))
 
-function clause execute (J-TYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
+function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
     print("execute JAL\n")
 }
 
