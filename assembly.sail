@@ -15,64 +15,68 @@ val execute : ast -> unit effect {rmem, rreg, wreg} /* execute function */
 /* R-TYPE instructions */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(ADD) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, ADD))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b111 @ rd : regbits @ 0b0110011
+function clause execute  (RTYPE (rs2, rs1, rd, ADD)) = {
+    let dummy = 0;
+}
+
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AND) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, AND))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(OR) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, OR))
 
-function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0110011
+function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(XOR) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, XOR))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(MUL) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, MUL))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(DIV) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, DIV))
 
-function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0110011
+function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(REM) @ rd : regbits @ 0b0110011
     = Some(RTYPE(rs2, rs1, rd, REM))
 
 /* I-TYPE instructions */
 union clause ast = ITYPE : (bits(12), regbits, regbits, iop)
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b0010011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ADDI) @ rd : regbits @ 0b0010011
     = Some(ITYPE(imm, rs1, rd, ADDI))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b010 @ rd : regbits @ 0b0010011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLTI) @ rd : regbits @ 0b0010011
     = Some(ITYPE(imm, rs1, rd, SLTI))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b111 @ rd : regbits @ 0b0010011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ANDI) @ rd : regbits @ 0b0010011
     = Some(ITYPE(imm, rs1, rd, ANDI))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b110 @ rd : regbits @ 0b0010011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ORI) @ rd : regbits @ 0b0010011
     = Some(ITYPE(imm, rs1, rd, ORI))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b100 @ rd : regbits @ 0b0010011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(XORI) @ rd : regbits @ 0b0010011
     = Some(ITYPE(imm, rs1, rd, XORI))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b000 @ rd : regbits @ 0b1100111
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(JALR) @ rd : regbits @ 0b1100111
     = Some(ITYPE(imm, rs1, rd, JALR))
 
-function clause decode imm : bits(12) @ rs1 : regbits @ 0b010 @ rd : regbits @ 0b0000011
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LW) @ rd : regbits @ 0b0000011
     = Some(ITYPE(imm, rs1, rd, LW))
 
 /* S-TYPE instructions */
 union clause ast = STYPE : (bits(7), regbits, regbits, bits(5), sop)
 
-function clause decode imm2 : bits(7) @ rs2 : regbits @ rs1 : regbits @ 0b010 @ imm1 : bits(5) @ 0b0100011
+function clause decode imm2 : bits(7) @ rs2 : regbits @ rs1 : regbits @ encdec_sop(SW) @ imm1 : bits(5) @ 0b0100011
     = Some(STYPE(imm2, rs2, rs1, imm1, SW))
 
 /* B-TYPE instructions */
 union clause ast = BTYPE : (bits(1), bits(6), regbits, regbits, bits(4), bits(1), bop)
 
-function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ 0b000 @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
+function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ encdec_bop(BEQ) @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BEQ))
 
-function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ 0b001 @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
+function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : regbits @ encdec_bop(BNE) @ imm1 : bits(4) @ imm3 : bits(1) @ 0b1100011
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BNE))
 
 /* U-TYPE instructions */
