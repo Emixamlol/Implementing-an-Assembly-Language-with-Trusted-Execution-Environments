@@ -1,7 +1,5 @@
-default Order dec
-
 $include <prelude.sail>
-$include "instructions.sail"
+$include "./instructions.sail"
 
 val print_str = {c: "print_endline"} : string -> unit
 val print_int = {c: "print_int"} : int -> unit
@@ -9,10 +7,22 @@ val print_bits = {c: "print_bits"} : forall ('n : Int) . bits('n) -> unit
 
 overload print = {print_str, print_int, print_bits}
 
-/* types */
+/* type declarations */
 type xlen : Int = 32
 type xlenbits : Type = bits(xlen)
-type regbits = bits(5)
+type regbits : Type = bits(5)
+
+/* register declarations */
+register zero : xlenbits    /* hard-wired zero */
+register ra : xlenbits      /* return address */
+register sp : xlenbits      /* stack pointer */
+register gp : xlenbits      /* global pointer */
+register a0 : xlenbits
+register a1 : xlenbits
+register a2 : xlenbits
+register a3 : xlenbits
+
+let X : vector(8, dec, register(xlenbits)) = [ref a3, ref a2, ref a1, ref a0, ref gp, ref sp, ref ra, ref zero]
 
 scattered union ast /* begin scattered ast definition */
 val decode : xlenbits -> option(ast) effect pure /* decode function */
