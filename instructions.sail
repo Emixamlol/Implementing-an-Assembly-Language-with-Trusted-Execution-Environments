@@ -64,7 +64,7 @@ mapping encdec_jop : jop <-> bits(1) = {
 
 /* operation types <-> assembly mnemonics */
 
-mapping rtype_mnemonic : rop <-> string = {
+/* mapping rtype_mnemonic : rop <-> string = {
     ADD <-> "add",
     AND <-> "and",
     OR  <-> "or",
@@ -95,4 +95,4 @@ mapping btype_mnemonic : bop <-> string = {
 
 mapping jtype_mnemonic : jop <-> string = {
     JAL <-> "jal"
-}
+} */
