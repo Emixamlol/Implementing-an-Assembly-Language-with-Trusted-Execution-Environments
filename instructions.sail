@@ -18,7 +18,11 @@ enum uop = {LUI, AUIPC}
 /* J-TYPE instructions */
 enum jop = {JAL}
 
-/* mappings */
+/* ----------------------------------------------------------------------------------------------------------- */
+
+/* Mappings */
+
+/* operation types <-> bit representation */
 
 mapping encdec_rop : rop <-> bits(3) = {
     ADD <-> 0b000,
@@ -56,4 +60,39 @@ mapping encdec_uop : uop <-> bits(1) = {
 
 mapping encdec_jop : jop <-> bits(1) = {
     JAL <-> 0b0
+}
+
+/* operation types <-> assembly mnemonics */
+
+mapping rtype_mnemonic : rop <-> string = {
+    ADD <-> "add",
+    AND <-> "and",
+    OR  <-> "or",
+    XOR <-> "xor",
+    MUL <-> "mul",
+    DIV <-> "div",
+    REM <-> "rem"
+}
+
+mapping itype_mnemonic : iop <-> string = {
+    ADDI    <-> "addi",
+    SLTI    <-> "slti",
+    ANDI    <-> "andi",
+    ORI     <-> "ori",
+    XORI    <-> "xori",
+    JALR    <-> "jalr",
+    LW      <-> "lw"
+}
+
+mapping stype_mnemonic : sop <-> string = {
+    SW <-> "sw"
+}
+
+mapping btype_mnemonic : bop <-> string = {
+    BEQ <-> "beq",
+    BNE <-> "bne"
+}
+
+mapping jtype_mnemonic : jop <-> string = {
+    JAL <-> "jal"
 }
