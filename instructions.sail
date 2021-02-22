@@ -1,4 +1,5 @@
 $include <prelude.sail>
+$include <mapping.sail>
 
 /* R-TYPE instructions */
 enum rop = {ADD, AND, OR, XOR, MUL, DIV, REM} /* NOP = ADDI, x0, x0, 0 */
@@ -64,7 +65,9 @@ mapping encdec_jop : jop <-> bits(1) = {
 
 /* operation types <-> assembly mnemonics */
 
-/* mapping rtype_mnemonic : rop <-> string = {
+/* $include <mapping.sail> to avoid 'no val spec found for string-length' */
+
+mapping rtype_mnemonic : rop <-> string = {
     ADD <-> "add",
     AND <-> "and",
     OR  <-> "or",
@@ -95,4 +98,4 @@ mapping btype_mnemonic : bop <-> string = {
 
 mapping jtype_mnemonic : jop <-> string = {
     JAL <-> "jal"
-} */
+}
