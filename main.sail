@@ -11,8 +11,9 @@ val cast extz : forall ('n 'm : Int) , 'm > 'n . (implicit('m), bits('n)) -> bit
 function extz(m, xs) = sail_zero_extend(xs, m)
 
 /* methods to increment PC Register */
-val add_bytes_to_PC : forall ('n : Int) , ('n > 0) . (int('n)) -> unit effect {rreg, wreg}
+/* val add_bytes_to_PC : forall ('n : Int) , ('n > 0) . (int('n)) -> unit effect {rreg, wreg}
 function add_bytes_to_PC(bytes) = {
+    PC + bytes;
     x : xlenbits = 0x0;
     match bytes {
         1 => x = 0x8,
@@ -22,12 +23,12 @@ function add_bytes_to_PC(bytes) = {
         _ => print("Cannot add this amount of bytes to PC register")
     };
     (*ref PC) = PC + x;
-}
+} */
 
-val add_4_bytes_to_PC: unit -> unit effect {rreg, wreg}
+/* val add_4_bytes_to_PC: unit -> unit effect {rreg, wreg}
 function add_4_bytes_to_PC() = add_bytes_to_PC(4)
 
-overload inc_PC = {add_bytes_to_PC, add_4_bytes_to_PC}
+overload inc_PC = {add_bytes_to_PC, add_4_bytes_to_PC} */
 
 /* read memory */
 val MEMr = {lem: "MEMr", coq: "MEMr", _: "read_ram"}: forall ('n 'm : Int) , 'n >= 0 . (int('m), int('n), bits('m), bits('m)) -> bits(8 * 'n) effect {rmem}
@@ -45,7 +46,8 @@ function main() : unit -> unit = {
     print("PC = ", PC);
     let line = read_mem(PC) in
     print("line = ", line);
-    inc_PC();
+    // inc_PC();
+    PC = PC + 4;
     print("PC = ", PC);
     let line = read_mem(PC) in
     print("line = ", line);
@@ -63,7 +65,7 @@ function main() : unit -> unit = {
                 None() => print("Instruction is None()"),
                 _ => print("decoding the instruction resulted in something unexpected")
             };
-            inc_PC()
+            // inc_PC()
         }
     }
 }
