@@ -1,11 +1,11 @@
 $include <prelude.sail>
-$include <mapping.sail>
+//$include <mapping.sail>
 
 /* R-TYPE instructions */
 enum rop = {ADD, AND, OR, XOR, MUL, DIV, REM} /* NOP = ADDI, x0, x0, 0 */
 
 /* I-TYPE instructions */
-enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW}
+enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW, EBREAK}
 
 /* S-TYPE instructions */
 enum sop = {SW}
@@ -42,7 +42,8 @@ mapping encdec_iop : iop <-> bits(3) = {
     ORI     <-> 0b110,
     XORI    <-> 0b100,
     JALR    <-> 0b000,
-    LW      <-> 0b010
+    LW      <-> 0b010,
+    EBREAK  <-> 0b000
 }
 
 mapping encdec_sop : sop <-> bits(3) = {
@@ -67,7 +68,7 @@ mapping encdec_jop : jop <-> bits(1) = {
 
 /* $include <mapping.sail> to avoid 'no val spec found for string-length' */
 
-mapping rtype_mnemonic : rop <-> string = {
+/* mapping rtype_mnemonic : rop <-> string = {
     ADD <-> "add",
     AND <-> "and",
     OR  <-> "or",
@@ -98,4 +99,4 @@ mapping btype_mnemonic : bop <-> string = {
 
 mapping jtype_mnemonic : jop <-> string = {
     JAL <-> "jal"
-}
+} */
