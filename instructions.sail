@@ -5,7 +5,7 @@ $include <prelude.sail>
 enum rop = {ADD, AND, OR, XOR, MUL, DIV, REM} /* NOP = ADDI, x0, x0, 0 */
 
 /* I-TYPE instructions */
-enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW, EBREAK}
+enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW}
 
 /* S-TYPE instructions */
 enum sop = {SW}
@@ -42,8 +42,7 @@ mapping encdec_iop : iop <-> bits(3) = {
     ORI     <-> 0b110,
     XORI    <-> 0b100,
     JALR    <-> 0b000,
-    LW      <-> 0b010,
-    EBREAK  <-> 0b000
+    LW      <-> 0b010
 }
 
 mapping encdec_sop : sop <-> bits(3) = {
