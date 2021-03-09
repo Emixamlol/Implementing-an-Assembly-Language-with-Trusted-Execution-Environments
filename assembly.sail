@@ -13,7 +13,10 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AD
     = Some(RTYPE(rs2, rs1, rd, ADD))
 
 function clause execute (RTYPE (rs2, rs1, rd, ADD)) = {
-    print("execute ADD\n")
+    let rs1_val = X(rs1) in
+    let rs2_val = X(rs2) in
+    let result  = rs1_val + rs2_val in
+    X(rd) = result
 }
 
 /* AND */
@@ -21,7 +24,13 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AN
     = Some(RTYPE(rs2, rs1, rd, AND))
 
 function clause execute (RTYPE (rs2, rs1, rd, AND)) = {
-    print("execute AND\n")
+    let rs1_val = X(rs1) in
+    let rs2_val = X(rs2) in
+    let bitwise_AND = rs1_val & rs2_val in
+    match bitwise_AND {
+        0b1 => X(rd) = 0b1,
+        _   => X(rd) = 0b0
+    }
 }
 
 /* OR */
@@ -29,7 +38,13 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(OR
     = Some(RTYPE(rs2, rs1, rd, OR))
 
 function clause execute (RTYPE (rs2, rs1, rd, OR)) = {
-    print("execute OR\n")
+    let rs1_val = X(rs1) in
+    let rs2_val = X(rs2) in
+    let bitwise_OR = rs1_val | rs2_val in
+    match bitwise_OR {
+        0b1 => X(rd) = 0b1,
+        _   => X(rd) = 0b0
+    }
 }
 
 /* XOR */
@@ -37,7 +52,13 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(XO
     = Some(RTYPE(rs2, rs1, rd, XOR))
 
 function clause execute (RTYPE (rs2, rs1, rd, XOR)) = {
-    print("execute XOR\n")
+    let rs1_val = X(rs1) in
+    let rs2_val = X(rs2) in
+    let bitwise_XOR = rs1_val ^ rs2_val in
+    match bitwise_XOR {
+        0b1 => X(rd) = 0b1,
+        _   => X(rd) = 0b0
+    }
 }
 
 /* MUL */
