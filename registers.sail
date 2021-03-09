@@ -16,6 +16,10 @@ register a3 : xlenbits
 
 let Xs : vector(8, dec, register(xlenbits)) = [ref a3, ref a2, ref a1, ref a0, ref gp, ref sp, ref ra, ref zero]
 
+/* automatically zero extend bitvectors when necessary */
+val cast extz : forall ('n 'm : Int) , 'm > 'n . (implicit('m), bits('n)) -> bits('m)
+function extz(m, xs) = sail_zero_extend(xs, m)
+
 /* operators for comparing bits */
 val gt_bit : forall ('n : Int) . (bits('n), bits('n)) -> bool
 function gt_bit(x, y) = unsigned(x) > unsigned(y)
@@ -34,15 +38,42 @@ overload operator >= = {gte_bit}
 overload operator <  = {lt_bit}
 overload operator <= = {lte_bit}
 
+/* implement XOR operator on bits*/
+val xor_bit : (bit, bit) -> bit
+function xor_bit(b1, b2) = if (b1 == b2) then bitzero else bitone
+
+overload operator ^ = {xor_bit}
+
+val xor_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> bits('n)
+function xor_bitvector(v1, v2) = {
+    let len = sizeof('n);
+    result : bits('n) = sail_zero_extend(0b0, len);
+    foreach (i from 0 to (len - 1)) {
+        let b1 = v1[i];
+        let b2 = v2[i];
+        result[i] = b1 ^ b2;
+    };
+    /* i : int = 0;
+    while (i < len) do {
+        let b1 = v1[i];
+        let b2 = v2[i];
+        result[i] = b1 ^ b2;
+        i = i + 1;
+    }; */
+    result
+}
+
+overload operator ^ = {xor_bitvector}
+
 /* read and write main registers */
-val rX : regbits -> register(xlenbits) effect {rreg}
-function rX(r) = let offset = r[2 .. 0] in Xs[unsigned(offset)]
+val rX : regbits -> xlenbits effect {rreg}
+function rX(r) = let offset = r[2 .. 0] in (*Xs[unsigned(offset)])
 
 val wX : (regbits, xlenbits) -> unit effect {wreg}
 function wX(r, v) = {
     let offset = r[2 .. 0] in match offset {
-        0b000   => print("Cannot overwrite hard-wired zero register"),
-        _       => (*Xs[unsigned(offset)]) = v
+        0b0 => print("Cannot overwrite hard-wired zero register"),
+        _   => (*Xs[unsigned(offset)]) = v
     }
 }
 
