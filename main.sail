@@ -6,10 +6,6 @@ $include "./print.sail"
 $include "./registers.sail"
 $include "./assembly.sail"
 
-/* automatically zero extend bitvectors when necessary */
-val cast extz : forall ('n 'm : Int) , 'm > 'n . (implicit('m), bits('n)) -> bits('m)
-function extz(m, xs) = sail_zero_extend(xs, m)
-
 /* read memory */
 val MEMr = {lem: "MEMr", coq: "MEMr", _: "read_ram"}: forall ('n 'm : Int) , 'n >= 0 . (int('m), int('n), bits('m), bits('m)) -> bits(8 * 'n) effect {rmem}
 // val read_mem : forall 'n , 'n >= 0 . (xlenbits, int('n)) -> bits(8 * 'n) effect {rmem}
