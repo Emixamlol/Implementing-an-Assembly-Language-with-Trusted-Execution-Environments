@@ -1,5 +1,6 @@
 $include <prelude.sail>
 $include "./instructions.sail"
+$include "./bitoperations.sail"
 
 scattered union ast /* begin scattered ast definition */
 val decode : xlenbits -> option(ast) effect pure /* decode function */
@@ -66,7 +67,12 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(MU
     = Some(RTYPE(rs2, rs1, rd, MUL))
 
 function clause execute (RTYPE (rs2, rs1, rd, MUL)) = {
-    print("execute MUL\n")
+    let multiplicand = X(rs1) in
+    let multiplier = X(rs2) in
+    let product = multiplicand * multiplier in
+    let len = sizeof(xlen) - 1 in
+    let result  = product[len .. 0] in
+    X(rd) = result
 }
 
 /* DIV */
