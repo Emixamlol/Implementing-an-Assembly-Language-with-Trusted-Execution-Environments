@@ -40,6 +40,17 @@ function main() : unit -> unit = {
     print("PC = ", PC);
     let line = read_mem(PC) in
     print("line = ", line);
+    test : bits(8) = 0xFF;
+    test = sail_shiftleft(test, 3);
+    print("test = ", test);
+    let a = 0b0111;
+    let b = 0b0011;
+    //let div = div_bitvector(a, b);
+    print("dummy");
+   /*  let quotient = div[0];
+    let remainder = div[1];
+    print("quotient = ", quotient);
+    print("remainder = ", remainder); */
     /* call the fetch-decode-execute loop */
-    fde_loop();
+    //fde_loop();
 }
