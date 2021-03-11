@@ -75,11 +75,8 @@ function mul_bitvector(multiplicand, multiplier) = {
     ext_mulier : bits(2 * 'n) = sail_sign_extend(multiplier, 2 * len);
     result : bits(2 * 'n) = sail_zeros(2 * len);
     foreach (i from 0 to (len - 1)) {
-        if (ext_mulier[i] == bitone) then {
-            let len = 2 * len in match i {
-                len => result = result + twos_complement(ext_muland >> i),
-                _   => result = result + (ext_muland >> i)
-            }
+        match ext_mulier[i] {
+            bitone => if (i == len - 1) then result = result + twos_complement(ext_muland >> i) else result = result + (ext_muland >> i)
         }
     };
     result
