@@ -2,15 +2,8 @@
 infixl 7 <<
 infixl 7 >>
 
-val operator << = "shiftl" : forall 'm. (bits('m), int) -> bits('m)
-val "shiftl" : forall 'm. (bits('m), int) -> bits('m)
-
-val operator >> = {
-  ocaml: "shiftr_ocaml",
-  c: "shiftr_c",
-  lem: "shiftr_lem",
-  _: "shiftr"
-} : forall 'm. (bits('m), int) -> bits('m)
+overload operator << = {sail_shiftleft}
+overload operator >> = {sail_shiftright}
 
 /* operators for comparing bits */
 val gt_bit : forall ('n : Int) . (bits('n), bits('n)) -> bool
@@ -66,20 +59,58 @@ function twos_complement(v) = {
     result
 }
 
+/* take the absolute value of or bitvector */
+val abs : forall ('n : Int) , 'n > 1 . bits('n) -> bits('n)
+function abs(v) = {
+    let msb = sizeof('n) - 1 in
+    match v[msb] {
+        bitzero => v,
+        bitone  => twos_complement(v)
+    }
+}
+
 /* signed bit multiplication */
 val mul_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> bits(2 * 'n)
 
 function mul_bitvector(multiplicand, multiplier) = {
     let len = sizeof('n);
-    ext_muland : bits(2 * 'n) = sail_sign_extend(multiplicand, 2 * len);
-    ext_mulier : bits(2 * 'n) = sail_sign_extend(multiplier, 2 * len);
+    let ext_muland : bits(2 * 'n) = sail_sign_extend(multiplicand, 2 * len);
+    let ext_mulier : bits(2 * 'n) = sail_sign_extend(multiplier, 2 * len);
     result : bits(2 * 'n) = sail_zeros(2 * len);
     foreach (i from 0 to (len - 1)) {
-        match ext_mulier[i] {
-            bitone => if (i == len - 1) then result = result + twos_complement(ext_muland >> i) else result = result + (ext_muland >> i)
+        if (ext_mulier[i] == bitone) then {
+            let msb = len - 1 in match i {
+                msb => result = result + twos_complement(ext_muland << i),
+                _   => result = result + (ext_muland << i)
+            }
         }
     };
     result
 }
 
 overload operator * = {mul_bitvector}
+
+/* signed bit division */
+
+overload operator - = {sub_bits}
+
+val div_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> vector(2, dec, bits(2 * 'n))
+
+function div_bitvector(dividend, divisor) = {
+    let len = sizeof('n);
+    let ext_divsor  : bits(2 * 'n) = twos_complement(sail_sign_extend(divisor, 2 * len));
+    ext_divend      : bits(2 * 'n) = twos_complement(sail_sign_extend(dividend, 2 * len));
+    quotient    : bits(2 * 'n) = sail_zeros(2 * len);
+    remainder   : bits(2 * 'n) = sail_zeros(2 * len);
+    /* foreach (i from 0 to len) {
+        let shift = len - i;
+        if (ext_divend > (ext_divsor << shift)) then {
+            ext_divend = ext_divend - (ext_divsor << shift);
+            quotient[shift] = bitone;
+        };
+        if (shift == 0) then remainder = replicate_bits(ext_divend, 1);
+    }; */
+    [quotient, remainder]
+}
+
+overload operator / = {div_bitvector}
