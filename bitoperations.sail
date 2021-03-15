@@ -39,13 +39,6 @@ function xor_bitvector(v1, v2) = {
         let b2 = v2[i];
         result[i] = b1 ^ b2;
     };
-    /* i : int = 0;
-    while (i < len) do {
-        let b1 = v1[i];
-        let b2 = v2[i];
-        result[i] = b1 ^ b2;
-        i = i + 1;
-    }; */
     result
 }
 
@@ -94,7 +87,7 @@ overload operator * = {mul_bitvector}
 
 overload operator - = {sub_bits}
 
-val div_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> vector(2, dec, bits(2 * 'n))
+val div_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> (bits(2 * 'n), bits(2 * 'n))
 
 function div_bitvector(dividend, divisor) = {
     let len = sizeof('n);
@@ -102,15 +95,15 @@ function div_bitvector(dividend, divisor) = {
     ext_divend      : bits(2 * 'n) = twos_complement(sail_sign_extend(dividend, 2 * len));
     quotient    : bits(2 * 'n) = sail_zeros(2 * len);
     remainder   : bits(2 * 'n) = sail_zeros(2 * len);
-    /* foreach (i from 0 to len) {
+    foreach (i from 0 to len) {
         let shift = len - i;
         if (ext_divend > (ext_divsor << shift)) then {
             ext_divend = ext_divend - (ext_divsor << shift);
             quotient[shift] = bitone;
         };
         if (shift == 0) then remainder = replicate_bits(ext_divend, 1);
-    }; */
-    [quotient, remainder]
+    };
+    (quotient, remainder)
 }
 
 overload operator / = {div_bitvector}
