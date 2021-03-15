@@ -14,10 +14,10 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AD
     = Some(RTYPE(rs2, rs1, rd, ADD))
 
 function clause execute (RTYPE (rs2, rs1, rd, ADD)) = {
-    let rs1_val = X(rs1) in
-    let rs2_val = X(rs2) in
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
     let result  = rs1_val + rs2_val in
-    X(rd) = result
+    wREG(rd) = result
 }
 
 /* AND */
@@ -25,12 +25,12 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AN
     = Some(RTYPE(rs2, rs1, rd, AND))
 
 function clause execute (RTYPE (rs2, rs1, rd, AND)) = {
-    let rs1_val = X(rs1) in
-    let rs2_val = X(rs2) in
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
     let bitwise_AND = rs1_val & rs2_val in
     match bitwise_AND {
-        0b1 => X(rd) = 0b1,
-        _   => X(rd) = 0b0
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
     }
 }
 
@@ -39,12 +39,12 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(OR
     = Some(RTYPE(rs2, rs1, rd, OR))
 
 function clause execute (RTYPE (rs2, rs1, rd, OR)) = {
-    let rs1_val = X(rs1) in
-    let rs2_val = X(rs2) in
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
     let bitwise_OR = rs1_val | rs2_val in
     match bitwise_OR {
-        0b1 => X(rd) = 0b1,
-        _   => X(rd) = 0b0
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
     }
 }
 
@@ -53,12 +53,12 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(XO
     = Some(RTYPE(rs2, rs1, rd, XOR))
 
 function clause execute (RTYPE (rs2, rs1, rd, XOR)) = {
-    let rs1_val = X(rs1) in
-    let rs2_val = X(rs2) in
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
     let bitwise_XOR = rs1_val ^ rs2_val in
     match bitwise_XOR {
-        0b1 => X(rd) = 0b1,
-        _   => X(rd) = 0b0
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
     }
 }
 
@@ -67,12 +67,12 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(MU
     = Some(RTYPE(rs2, rs1, rd, MUL))
 
 function clause execute (RTYPE (rs2, rs1, rd, MUL)) = {
-    let multiplicand = X(rs1) in
-    let multiplier = X(rs2) in
+    let multiplicand = rREG(rs1) in
+    let multiplier = rREG(rs2) in
     let product = multiplicand * multiplier in
     let len = sizeof(xlen) - 1 in
     let result  = product[len .. 0] in
-    X(rd) = result
+    wREG(rd) = result
 }
 
 /* DIV */
@@ -80,7 +80,12 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(DI
     = Some(RTYPE(rs2, rs1, rd, DIV))
 
 function clause execute (RTYPE (rs2, rs1, rd, DIV)) = {
-    print("execute DIV\n")
+    let dividend = rREG(rs1) in
+    let divisor = rREG(rs2) in
+    let (div, rem) = dividend / divisor in
+    let len = sizeof(xlen) - 1 in
+    let result = div[len .. 0] in
+    wREG(rd) = result
 }
 
 /* REM */
@@ -88,7 +93,12 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(RE
     = Some(RTYPE(rs2, rs1, rd, REM))
 
 function clause execute (RTYPE (rs2, rs1, rd, REM)) = {
-    print("execute REM\n")
+    let dividend = rREG(rs1) in
+    let divisor = rREG(rs2) in
+    let (div, rem) = dividend / divisor in
+    let len = sizeof(xlen) - 1 in
+    let result = rem[len .. 0] in
+    wREG(rd) = result
 }
 
 /* I-TYPE instructions */
@@ -99,7 +109,10 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ADDI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, ADDI))
 
 function clause execute (ITYPE (imm, rs1, rd, ADDI)) = {
-    print("execute ADDI\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    let result  = rs1_val + imm_ext in
+    wREG(rd) = result
 }
 
 /* SLTI */
@@ -107,7 +120,9 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLTI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, SLTI))
 
 function clause execute (ITYPE (imm, rs1, rd, SLTI)) = {
-    print("execute SLTI\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    if (rs1_val < imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0}
 }
 
 /* ANDI */
@@ -115,7 +130,13 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ANDI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, ANDI))
 
 function clause execute (ITYPE (imm, rs1, rd, ANDI)) = {
-    print("execute ANDI\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    let bitwise_AND = rs1_val & imm_ext in
+    match bitwise_AND {
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
+    }
 }
 
 /* ORI */
@@ -123,7 +144,13 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ORI) @ rd : r
     = Some(ITYPE(imm, rs1, rd, ORI))
 
 function clause execute (ITYPE (imm, rs1, rd, ORI)) = {
-    print("execute ORI\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    let bitwise_OR = rs1_val | imm_ext in
+    match bitwise_OR {
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
+    }
 }
 
 /* XORI */
@@ -131,7 +158,13 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(XORI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, XORI))
 
 function clause execute (ITYPE (imm, rs1, rd, XORI)) = {
-    print("execute XORI\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    let bitwise_XOR = rs1_val ^ imm_ext in
+    match bitwise_XOR {
+        0b1 => wREG(rd) = 0b1,
+        _   => wREG(rd) = 0b0
+    }
 }
 
 /* JALR */
@@ -139,7 +172,13 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(JALR) @ rd : 
     = Some(ITYPE(imm, rs1, rd, JALR))
 
 function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
-    print("execute JALR\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in {
+        offset : xlenbits = rs1_val + imm_ext;
+        offset[0] = bitzero;
+        wREG(rd) = PC + 4;
+        PC = PC + offset;
+    }
 }
 
 /* LW */
@@ -147,7 +186,11 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LW) @ rd : re
     = Some(ITYPE(imm, rs1, rd, LW))
 
 function clause execute (ITYPE (imm, rs1, rd, LW)) = {
-    print("execute LW\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in 
+    let addr    = rs1_val + imm_ext in
+    let mem_val = read_mem(addr) in
+    wREG(rd) = mem_val
 }
 
 /* S-TYPE instructions */
