@@ -6,14 +6,6 @@ $include "./print.sail"
 $include "./registers.sail"
 $include "./assembly.sail"
 
-/* read memory */
-val MEMr = {lem: "MEMr", coq: "MEMr", _: "read_ram"}: forall ('n 'm : Int) , 'n >= 0 . (int('m), int('n), bits('m), bits('m)) -> bits(8 * 'n) effect {rmem}
-// val read_mem : forall 'n , 'n >= 0 . (xlenbits, int('n)) -> bits(8 * 'n) effect {rmem}
-val read_mem : xlenbits -> xlenbits effect {rmem}
-
-// function read_mem(addr, width) = MEMr(sizeof(xlen), width, sail_zero_extend(0x0, sizeof(xlen)), addr)
-function read_mem(addr) = MEMr(sizeof(xlen), 4, sail_zero_extend(0x0, sizeof(xlen)), addr)
-
 /* fetch-decode-execute loop */
 val fde_loop : unit -> unit effect {rreg, wreg, rmem}
 function fde_loop() = {
@@ -45,7 +37,8 @@ function main() : unit -> unit = {
     print("test = ", test);
     let a = 0b0111;
     let b = 0b0011;
-    //let div = div_bitvector(a, b);
+    let (v1, v2) = div_bitvector(a, b);
+    print("v2 = ", v2);
     print("dummy");
    /*  let quotient = div[0];
     let remainder = div[1];
