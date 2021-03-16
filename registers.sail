@@ -43,10 +43,15 @@ function wREG(r, v) = {
     }
 }
 
-/* read memory */
+/* read and write memory */
 val MEMr = {lem: "MEMr", coq: "MEMr", _: "read_ram"}: forall ('n 'm : Int) , 'n >= 0 . (int('m), int('n), bits('m), bits('m)) -> bits(8 * 'n) effect {rmem}
 /* val read_mem : forall 'n , 'n >= 0 . (xlenbits, int('n)) -> bits(8 * 'n) effect {rmem} */
 val read_mem : xlenbits -> xlenbits effect {rmem}
 
-/* function read_mem(addr, width) = MEMr(sizeof(xlen), width, sail_zero_extend(0x0, sizeof(xlen)), addr) */
-function read_mem(addr) = MEMr(sizeof(xlen), 4, sail_zero_extend(0x0, sizeof(xlen)), addr)
+/* function read_mem(addr, width) = MEMr(sizeof(xlen), width, sail_zeros(sizeof(xlen)), addr) */
+function read_mem(addr) = MEMr(sizeof(xlen), 4, sail_zeros(sizeof(xlen)), addr)
+
+val MEMw = {lem: "MEMw", coq: "MEMw", _: "write_ram"}: forall ('n 'm : Int) , 'n >= 0 . (int('m), int('n), bits('m), bits('m), bits('m)) -> unit effect {wmem}
+
+val write_mem : (xlenbits, xlenbits) -> unit effect {wmem}
+function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)), addr, data)
