@@ -4,7 +4,7 @@ $include "./bitoperations.sail"
 
 scattered union ast /* begin scattered ast definition */
 val decode : xlenbits -> option(ast) effect pure /* decode function */
-val execute : ast -> unit effect {rmem, rreg, wreg} /* execute function */
+val execute : ast -> unit effect {rreg, wreg, rmem, wmem} /* execute function */
 
 /* R-TYPE instructions */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
@@ -172,12 +172,12 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(JALR) @ rd : 
     = Some(ITYPE(imm, rs1, rd, JALR))
 
 function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
+    wREG(rd) = PC + 4;
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in {
-        offset : xlenbits = rs1_val + imm_ext;
-        offset[0] = bitzero;
-        wREG(rd) = PC + 4;
-        PC = PC + offset;
+        newPC : xlenbits = rs1_val + imm_ext;
+        newPC[0] = bitzero;
+        PC = newPC;
     }
 }
 
@@ -200,7 +200,12 @@ function clause decode imm2 : bits(7) @ rs2 : regbits @ rs1 : regbits @ encdec_s
     = Some(STYPE(imm2, rs2, rs1, imm1, SW))
 
 function clause execute (STYPE (imm2, rs2, rs1, imm1, SW)) = {
-    print("execute SW\n")
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm2 @ imm1) in
+    let addr    = rs1_val + imm_ext in {
+        let rs2_val = rREG(rs2) in
+        write_mem(addr, rs2_val);
+    }
 }
 
 /* B-TYPE instructions */
@@ -211,7 +216,12 @@ function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : r
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BEQ))
 
 function clause execute (BTYPE (imm4, imm2, rs2, rs1, imm1, imm3, BEQ)) = {
-    print("execute BEQ\n")
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
+    if (rs1_val == rs2_val) then {
+        let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
+        PC = PC + offset;
+    }
 }
 
 /* BNE */
@@ -219,7 +229,12 @@ function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : r
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BNE))
 
 function clause execute (BTYPE (imm4, imm2, rs2, rs1, imm1, imm3, BNE)) = {
-    print("execute BNE\n")
+    let rs1_val = rREG(rs1) in
+    let rs2_val = rREG(rs2) in
+    if (rs1_val != rs2_val) then {
+        let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
+        PC = PC + offset;
+    }
 }
 
 /* U-TYPE instructions */
@@ -230,7 +245,7 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0110111
     = Some(UTYPE(imm, rd, LUI))
 
 function clause execute (UTYPE (imm, rd, LUI)) = {
-    print("execute LUI\n")
+    wREG(rd) = imm @ sail_zeros(12);
 }
 
 /* AUIPC */
@@ -238,7 +253,8 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0010111
     = Some(UTYPE(imm, rd, AUIPC))
 
 function clause execute (UTYPE (imm, rd, AUIPC)) = {
-    print("execute AUIPC\n")
+    let offset = imm @ sail_zeros(12) in
+    wREG(rd) = PC + offset;
 }
 
 /* J-TYPE instructions */
@@ -248,7 +264,9 @@ function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 
     = Some(JTYPE(imm4, imm1, imm2, imm3, rd, JAL))
 
 function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
-    print("execute JAL\n")
+    wREG(rd) = PC + 4;
+    let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
+    PC = PC + offset;
 }
 
 /* EBREAK */
