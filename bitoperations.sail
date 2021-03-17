@@ -23,7 +23,7 @@ overload operator >= = {gte_bit}
 overload operator <  = {lt_bit}
 overload operator <= = {lte_bit}
 
-/* XOR operator on bits*/
+/* XOR operator on bits and booleans*/
 val xor_bit : (bit, bit) -> bit
 function xor_bit(b1, b2) = if (b1 == b2) then bitzero else bitone
 
@@ -43,6 +43,11 @@ function xor_bitvector(v1, v2) = {
 }
 
 overload operator ^ = {xor_bitvector}
+
+val xor_bool : (bool, bool) -> bool
+function xor_bool(b1, b2) = if (b1 == b2) then false else true
+
+overload operator ^ = {xor_bool}
 
 /* take 2's complement of a bitvector */
 val twos_complement : forall ('n : Int) , 'n > 1 . bits('n) -> bits('n)
@@ -66,6 +71,8 @@ function abs(v) = {
 val mul_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> bits(2 * 'n)
 
 function mul_bitvector(multiplicand, multiplier) = {
+    print("multiplicand = ", signed(multiplicand));
+    print("mutliplier = ", signed(multiplier));
     let len = sizeof('n);
     let ext_muland : bits(2 * 'n) = sail_sign_extend(multiplicand, 2 * len);
     let ext_mulier : bits(2 * 'n) = sail_sign_extend(multiplier, 2 * len);
@@ -78,6 +85,7 @@ function mul_bitvector(multiplicand, multiplier) = {
             }
         }
     };
+    print("result = ", signed(result));
     result
 }
 
@@ -90,9 +98,11 @@ overload operator - = {sub_bits}
 val div_bitvector : forall ('n : Int) , 'n > 1 . (bits('n), bits('n)) -> (bits(2 * 'n), bits(2 * 'n))
 
 function div_bitvector(dividend, divisor) = {
+    print("dividend = ", signed(dividend));
+    print("divisor = ", signed(divisor));
     let len = sizeof('n);
-    let ext_divsor  : bits(2 * 'n) = twos_complement(sail_sign_extend(divisor, 2 * len));
-    ext_divend      : bits(2 * 'n) = twos_complement(sail_sign_extend(dividend, 2 * len));
+    let ext_divsor  : bits(2 * 'n) = abs(sail_sign_extend(divisor, 2 * len));
+    ext_divend      : bits(2 * 'n) = abs(sail_sign_extend(dividend, 2 * len));
     quotient    : bits(2 * 'n) = sail_zeros(2 * len);
     remainder   : bits(2 * 'n) = sail_zeros(2 * len);
     foreach (i from 0 to len) {
@@ -103,6 +113,13 @@ function div_bitvector(dividend, divisor) = {
         };
         if (shift == 0) then remainder = replicate_bits(ext_divend, 1);
     };
+    let msb = len - 1 in
+    if ((dividend[msb] == bitone) ^ (divisor[msb] == bitone)) then {
+        quotient    = twos_complement(quotient);
+        remainder   = twos_complement(remainder);
+    };
+    print("quotient = ", signed(quotient));
+    print("remainder = ", signed(remainder));
     (quotient, remainder)
 }
 
