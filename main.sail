@@ -7,7 +7,7 @@ $include "./registers.sail"
 $include "./assembly.sail"
 
 /* fetch-decode-execute loop */
-val fde_loop : unit -> unit effect {rreg, wreg, rmem}
+val fde_loop : unit -> unit effect {rreg, wreg, rmem, wmem}
 function fde_loop() = {
     continue_loop : bool = true;
     while (continue_loop) do {
@@ -35,11 +35,15 @@ function main() : unit -> unit = {
     test : bits(8) = 0xFF;
     test = sail_shiftleft(test, 3);
     print("test = ", test);
-    let a = 0b0111;
+    let a = 0b1001;
     let b = 0b0011;
-    let (v1, v2) = div_bitvector(a, b);
-    print("v2 = ", v2);
-    print("dummy");
+    let (div, rem) = a / b;
+    print("quotient = ", div);
+    print("remainder = ", rem);
+    let c = 0b1110;
+    let d = 0b0011;
+    let mul = d * c;
+    print("mul = ", mul);
    /*  let quotient = div[0];
     let remainder = div[1];
     print("quotient = ", quotient);
