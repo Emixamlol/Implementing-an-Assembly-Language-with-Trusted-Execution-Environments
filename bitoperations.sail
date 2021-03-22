@@ -77,12 +77,13 @@ function mul_bitvector(multiplicand, multiplier) = {
     let ext_muland : bits(2 * 'n) = sail_sign_extend(multiplicand, 2 * len);
     let ext_mulier : bits(2 * 'n) = sail_sign_extend(multiplier, 2 * len);
     result : bits(2 * 'n) = sail_zeros(2 * len);
-    foreach (i from 0 to (len - 1)) {
+    let msb = len - 1 in
+    foreach (i from 0 to msb) {
         if (ext_mulier[i] == bitone) then {
-            let msb = len - 1 in match i {
-                msb => result = result + twos_complement(ext_muland << i),
+            match i {
+                msb if msb == (len - 1) => result = result + twos_complement(ext_muland << i),
                 _   => result = result + (ext_muland << i)
-            }
+            };
         }
     };
     print("result = ", signed(result));
