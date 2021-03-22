@@ -36,18 +36,14 @@ function main() : unit -> unit = {
     test = sail_shiftleft(test, 3);
     print("test = ", test);
     let a = 0b1001;
-    let b = 0b0011;
+    let b = 0b1011;
     let (div, rem) = a / b;
     print("quotient = ", div);
     print("remainder = ", rem);
-    let c = 0b1110;
-    let d = 0b0011;
-    let mul = d * c;
+    let c = 0b0110;
+    let d = 0b0111;
+    let mul = c * d;
     print("mul = ", mul);
-   /*  let quotient = div[0];
-    let remainder = div[1];
-    print("quotient = ", quotient);
-    print("remainder = ", remainder); */
     /* call the fetch-decode-execute loop */
     //fde_loop();
 }
