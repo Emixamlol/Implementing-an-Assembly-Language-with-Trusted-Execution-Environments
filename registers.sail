@@ -55,3 +55,25 @@ val MEMw = {lem: "MEMw", coq: "MEMw", _: "write_ram"}: forall ('n 'm : Int) , 'n
 
 val write_mem : (xlenbits, xlenbits) -> unit effect {wmem}
 function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)), addr, data)
+
+/* display the contents of all registers */
+val obj_dump : unit -> unit effect {rreg}
+
+function obj_dump() = {
+    foreach (i from 0 to 7) {
+        let content = (*Xs[i]);
+        reg_name = "";
+        match i {
+            0   => reg_name = "zero",
+            1   => reg_name = "ra",
+            2   => reg_name = "sp",
+            3   => reg_name = "gp",
+            4   => reg_name = "a0",
+            5   => reg_name = "a1",
+            6   => reg_name = "a2",
+            7   => reg_name = "a3",
+            _   => print("unkown register")
+        };
+        print(reg_name + " = ", content)
+    }
+}
