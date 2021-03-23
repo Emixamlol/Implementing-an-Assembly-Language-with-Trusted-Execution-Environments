@@ -45,5 +45,7 @@ function main() : unit -> unit = {
     let mul = c * d;
     print("mul = ", mul);
     /* call the fetch-decode-execute loop */
-    //fde_loop();
+    fde_loop();
+    /* print register contents after the ELF file has been executed */
+    obj_dump();
 }
