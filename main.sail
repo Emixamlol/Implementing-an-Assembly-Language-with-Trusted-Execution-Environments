@@ -30,20 +30,6 @@ function fde_loop() = {
 function main() : unit -> unit = {
     PC = get_slice_int(sizeof(xlen), elf_entry(), 0);
     print("PC = ", PC);
-    let line = read_mem(PC) in
-    print("line = ", line);
-    test : bits(8) = 0xFF;
-    test = sail_shiftleft(test, 3);
-    print("test = ", test);
-    let a = 0b1001;
-    let b = 0b1011;
-    let (div, rem) = a / b;
-    print("quotient = ", div);
-    print("remainder = ", rem);
-    let c = 0b0110;
-    let d = 0b0111;
-    let mul = c * d;
-    print("mul = ", mul);
     /* call the fetch-decode-execute loop */
     fde_loop();
     /* print register contents after the ELF file has been executed */
