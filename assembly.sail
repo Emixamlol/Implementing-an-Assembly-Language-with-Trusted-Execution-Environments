@@ -193,6 +193,16 @@ function clause execute (ITYPE (imm, rs1, rd, LW)) = {
     wREG(rd) = mem_val
 }
 
+/* SLLI (assert) */
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLLI) @ rd : regbits @ 0b0010011
+    = Some(ITYPE(imm, rs1, rd, SLLI))
+
+function clause execute (ITYPE (imm, rs1, rd, SLLI)) = {
+    let rs1_val = rREG(rs1) in
+    let imm_ext = EXTS(imm) in
+    if (rs1_val == imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0}
+}
+
 /* S-TYPE instructions */
 union clause ast = STYPE : (bits(7), regbits, regbits, bits(5), sop)
 
@@ -274,5 +284,10 @@ union clause ast = EBREAK : unit
 
 function clause decode 0b000000000001 @ 0b00000 @ 0b000 @ 0b00000 @ 0b1110011
     = Some(EBREAK())
+
+
+/* In any other bit pattern case, decode gives back None() */
+function clause decode _
+    = None()
 
 end ast /* end scattered ast definition */
