@@ -1,11 +1,10 @@
 $include <prelude.sail>
-//$include <mapping.sail>
 
 /* R-TYPE instructions */
 enum rop = {ADD, AND, OR, XOR, MUL, DIV, REM} /* NOP = ADDI, x0, x0, 0 */
 
 /* I-TYPE instructions */
-enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW, SLLI}
+enum iop = {ADDI, SLTI, ANDI, ORI, XORI, JALR, LW, SLLI, LB, LH}
 
 /* S-TYPE instructions */
 enum sop = {SW}
@@ -23,7 +22,7 @@ enum jop = {JAL}
 
 /* Mappings */
 
-/* operation types <-> bit representation */
+/* operation type <-> bit representation */
 
 mapping encdec_rop : rop <-> bits(3) = {
     ADD <-> 0b000,
@@ -43,7 +42,9 @@ mapping encdec_iop : iop <-> bits(3) = {
     XORI    <-> 0b100,
     JALR    <-> 0b000,
     LW      <-> 0b010,
-    SLLI    <-> 0b001
+    SLLI    <-> 0b001,
+    LB      <-> 0b000,
+    LH      <-> 0b001
 }
 
 mapping encdec_sop : sop <-> bits(3) = {
@@ -63,40 +64,3 @@ mapping encdec_uop : uop <-> bits(1) = {
 mapping encdec_jop : jop <-> bits(1) = {
     JAL <-> 0b0
 }
-
-/* operation types <-> assembly mnemonics */
-
-/* $include <mapping.sail> to avoid 'no val spec found for string-length' */
-
-/* mapping rtype_mnemonic : rop <-> string = {
-    ADD <-> "add",
-    AND <-> "and",
-    OR  <-> "or",
-    XOR <-> "xor",
-    MUL <-> "mul",
-    DIV <-> "div",
-    REM <-> "rem"
-}
-
-mapping itype_mnemonic : iop <-> string = {
-    ADDI    <-> "addi",
-    SLTI    <-> "slti",
-    ANDI    <-> "andi",
-    ORI     <-> "ori",
-    XORI    <-> "xori",
-    JALR    <-> "jalr",
-    LW      <-> "lw"
-}
-
-mapping stype_mnemonic : sop <-> string = {
-    SW <-> "sw"
-}
-
-mapping btype_mnemonic : bop <-> string = {
-    BEQ <-> "beq",
-    BNE <-> "bne"
-}
-
-mapping jtype_mnemonic : jop <-> string = {
-    JAL <-> "jal"
-} */
