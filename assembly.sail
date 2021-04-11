@@ -203,6 +203,32 @@ function clause execute (ITYPE (imm, rs1, rd, SLLI)) = {
     if (rs1_val == imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0}
 }
 
+/* LB (begin enclave) */
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LB) @ rd : regbits @ 0b0000011
+    = Some(ITYPE(imm, rs1, rd, LB))
+
+function clause execute (ITYPE (imm, rs1, rd, LB)) = {
+    a0 = PC; /* save the program counter which currently contains the start-address of the enclave */
+    continue_loop : bool = true;
+    while (continue_loop) do {
+        let instruction : xlenbits = read_mem(*ref PC) in
+        let decoded_instruction = decode(instruction) in
+        match decoded_instruction {
+            Some(ITYPE (imm, rs1, rd, LH))  =>  {execute(ITYPE (imm, rs1, rd, LH)) ; continue_loop = false },
+            _   =>  inc_PC()
+        }
+    };
+    PC = a0; /* restore the program counter */
+}
+
+/* LH (end enclave) */
+function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LH) @ rd : regbits @ 0b0000011
+    = Some(ITYPE(imm, rs1, rd, LH))
+
+function clause execute (ITYPE (imm, rs1, rd, LH)) = {
+    a1 = PC; /* save the currently stored address from PC to a1, which is the end-address of the enclave */
+}
+
 /* S-TYPE instructions */
 union clause ast = STYPE : (bits(7), regbits, regbits, bits(5), sop)
 
