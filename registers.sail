@@ -38,7 +38,7 @@ function rREG(r) = let offset = r[2 .. 0] in (*Xs[unsigned(offset)])
 val wREG : (regbits, xlenbits) -> unit effect {wreg}
 function wREG(r, v) = {
     let offset = r[2 .. 0] in match offset {
-        0b0 => print("Cannot overwrite hard-wired zero register"),
+        0b0 => if (v == 0b0) then {(*Xs[0]) = 0b0} else print("Cannot overwrite hard-wired zero register"),
         _   => (*Xs[unsigned(offset)]) = v
     }
 }
@@ -60,19 +60,17 @@ function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)),
 val obj_dump : unit -> unit effect {rreg}
 
 function obj_dump() = {
-    foreach (i from 0 to 7) {
+    foreach (i from 0 to (length(Xs) - 1)) {
         let content = (*Xs[i]);
-        reg_name = "";
-        match i {
-            0   => reg_name = "zero",
-            1   => reg_name = "ra",
-            2   => reg_name = "sp",
-            3   => reg_name = "gp",
-            4   => reg_name = "a0",
-            5   => reg_name = "a1",
-            6   => reg_name = "a2",
-            7   => reg_name = "a3",
-            _   => print("unkown register")
+        reg_name : string = match i {
+            0   => "zero",
+            1   => "ra",
+            2   => "sp",
+            3   => "gp",
+            4   => "a0",
+            5   => "a1",
+            6   => "a2",
+            7   => "a3"
         };
         print(reg_name + " = ", content)
     }
