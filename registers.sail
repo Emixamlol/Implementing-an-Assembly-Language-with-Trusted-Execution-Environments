@@ -56,6 +56,14 @@ val MEMw = {lem: "MEMw", coq: "MEMw", _: "write_ram"}: forall ('n 'm : Int) , 'n
 val write_mem : (xlenbits, xlenbits) -> unit effect {wmem}
 function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)), addr, data)
 
+/* reset registers (resets all but a3) */
+val reset_registers : unit -> unit effect {wreg}
+function reset_registers() = {
+    foreach (i from 0 to (length(Xs) - 2)) {
+        (*Xs[i]) = 0b0;
+    }
+}
+
 /* display the contents of all registers */
 val obj_dump : unit -> unit effect {rreg}
 
