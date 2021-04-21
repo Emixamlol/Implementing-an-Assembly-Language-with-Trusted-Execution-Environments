@@ -177,6 +177,11 @@ function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
     let imm_ext = EXTS(imm) in {
         newPC : xlenbits = rs1_val + imm_ext;
         newPC[0] = bitzero;
+        if (PC < a0 | PC > a1) then {
+            if (a0 <= newPC & newPC <= a1) then newPC = a0;
+        } else {
+            if (newPC < a0 | newPC > a1) then reset_registers();
+        }
         PC = newPC;
     }
 }
@@ -189,8 +194,10 @@ function clause execute (ITYPE (imm, rs1, rd, LW)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in 
     let addr    = rs1_val + imm_ext in
-    let mem_val = read_mem(addr) in
-    wREG(rd) = mem_val
+    if ((a0 <= addr & addr <= a1 & a0 <= PC & PC <= a1) | addr < a0 | addr > a1) then {
+        let mem_val = read_mem(addr) in
+        wREG(rd) = mem_val
+    } else print("You are not allowed to read from protected memory section");
 }
 
 /* SLLI (assert) */
@@ -204,8 +211,8 @@ function clause execute (ITYPE (imm, rs1, rd, SLLI)) = {
 }
 
 /* LB (begin enclave) */
-function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LB) @ rd : regbits @ 0b0000011
-    = Some(ITYPE(imm, rs1, rd, LB))
+function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LB) @ 0b00000 @ 0b0000011
+    = Some(ITYPE(imm, 0b0, 0b0, LB))
 
 function clause execute (ITYPE (imm, rs1, rd, LB)) = {
     a0 = PC; /* save the program counter which currently contains the start-address of the enclave */
@@ -214,7 +221,7 @@ function clause execute (ITYPE (imm, rs1, rd, LB)) = {
         let instruction : xlenbits = read_mem(*ref PC) in
         let decoded_instruction = decode(instruction) in
         match decoded_instruction {
-            Some(ITYPE (imm, rs1, rd, LH))  =>  {execute(ITYPE (imm, rs1, rd, LH)) ; continue_loop = false },
+            Some(ITYPE (imm, rs1, rd, LH))  =>  {a1 = PC ; continue_loop = false }, /* save the end-address of the enclave and stop the loop */
             _   =>  inc_PC()
         }
     };
@@ -222,11 +229,13 @@ function clause execute (ITYPE (imm, rs1, rd, LB)) = {
 }
 
 /* LH (end enclave) */
-function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LH) @ rd : regbits @ 0b0000011
-    = Some(ITYPE(imm, rs1, rd, LH))
+function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LH) @ 0b00000 @ 0b0000011
+    = Some(ITYPE(imm, 0b0, 0b0, LH))
 
 function clause execute (ITYPE (imm, rs1, rd, LH)) = {
-    a1 = PC; /* save the currently stored address from PC to a1, which is the end-address of the enclave */
+    /* reset registers upon leaving an enclave */
+    PC = ra;
+    reset_registers();
 }
 
 /* S-TYPE instructions */
@@ -302,7 +311,12 @@ function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 
 function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
     wREG(rd) = PC + 4;
     let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
-    PC = PC + offset;
+    let newPC = PC + offset;
+    if (PC < a0 | PC > a1) then {
+        if (a0 <= newPC & newPC <= a1) then PC = a0 else PC = newPC;
+    } else {
+        if (a0 <= newPC & newPC <= a1) then PC = newPC else {PC = newPC ; reset_registers()}
+    }
 }
 
 /* EBREAK */
