@@ -247,8 +247,10 @@ function clause execute (STYPE (imm2, rs2, rs1, imm1, SW)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm2 @ imm1) in
     let addr    = rs1_val + imm_ext in {
-        let rs2_val = rREG(rs2) in
-        write_mem(addr, rs2_val);
+        if ((a0 <= addr & addr <= a1 & a0 <= PC & PC <= a1) | addr < a0 | addr > a1) then {
+            let rs2_val = rREG(rs2) in
+            write_mem(addr, rs2_val);
+        } else print("You are not allowed to write to protected memory section");
     }
 }
 
