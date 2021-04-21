@@ -233,9 +233,8 @@ function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LH) @ 0b00000 @ 0b0
     = Some(ITYPE(imm, 0b0, 0b0, LH))
 
 function clause execute (ITYPE (imm, rs1, rd, LH)) = {
-    /* reset registers upon leaving an enclave */
     PC = ra;
-    reset_registers();
+    reset_registers(); 
 }
 
 /* S-TYPE instructions */
