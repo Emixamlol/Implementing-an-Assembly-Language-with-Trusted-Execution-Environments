@@ -1,6 +1,5 @@
 $include <prelude.sail>
 $include "./instructions.sail"
-$include "./bitoperations.sail"
 
 scattered union ast /* begin scattered ast definition */
 val decode : xlenbits -> option(ast) effect pure /* decode function */
@@ -189,12 +188,13 @@ function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
     let imm_ext = EXTS(imm) in {
         newPC : xlenbits = rs1_val + imm_ext;
         newPC[0] = bitzero;
-        if (PC < a0 | PC > a1) then {
-            if (a0 <= newPC & newPC <= a1) then print("You are not allowed to jump to protected memory section") else PC = newPC;
+        if unprotected(PC) then {
+            if protected(newPC) then print("You are not allowed to jump to protected memory section") else PC = newPC;
         } else {
             PC = newPC;
-            if (newPC < a0 | newPC > a1) then reset_registers();
-        }
+            if unprotected(newPC) then reset_registers();
+        };
+        if PC == start_boundary then inc_PC();
     }
 }
 
@@ -206,7 +206,7 @@ function clause execute (ITYPE (imm, rs1, rd, LW)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in 
     let addr    = rs1_val + imm_ext in
-    if ((a0 <= addr & addr <= a1 & a0 <= PC & PC <= a1) | addr < a0 | addr > a1) then {
+    if ((protected(addr) & protected(PC)) | unprotected(addr)) then {
         let mem_val = read_mem(addr) in
         wREG(rd) = mem_val
     } else print("You are not allowed to read from protected memory section");
@@ -229,17 +229,17 @@ function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LB) @ 0b00000 @ 0b0
     = Some(ITYPE(imm, 0b0, 0b0, LB))
 
 function clause execute (ITYPE (imm, rs1, rd, LB)) = {
-    a0 = PC; /* save the program counter which currently contains the start-address of the enclave */
+    start_boundary = PC; /* save the program counter which currently contains the start-address of the enclave */
     continue_loop : bool = true;
     while (continue_loop) do {
         let instruction : xlenbits = read_mem(*ref PC) in
         let decoded_instruction = decode(instruction) in
         match decoded_instruction {
-            Some(ITYPE (imm, rs1, rd, LH))  =>  {a1 = PC ; continue_loop = false }, /* save the end-address of the enclave and stop the loop */
+            Some(ITYPE (imm, rs1, rd, LH))  =>  {end_boundary = PC ; continue_loop = false }, /* save the end-address of the enclave and stop the loop */
             _   =>  inc_PC()
         }
     };
-    PC = a0 + 4; /* restore the program counter */
+    PC = start_boundary + 4; /* restore the program counter */
 }
 
 /* LH (end enclave) */
@@ -262,7 +262,7 @@ function clause execute (STYPE (imm2, rs2, rs1, imm1, SW)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm2 @ imm1) in
     let addr    = rs1_val + imm_ext in {
-        if ((a0 <= addr & addr <= a1 & a0 <= PC & PC <= a1) | addr < a0 | addr > a1) then {
+        if ((protected(addr) & protected(PC)) | unprotected(addr)) then {
             let rs2_val = rREG(rs2) in
             write_mem(addr, rs2_val);
         } else print("You are not allowed to write to protected memory section");
@@ -331,12 +331,13 @@ function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
     wREG(rd) = PC + 4;
     let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
     let newPC = PC + offset in
-    if (PC < a0 | PC > a1) then {
-        if (a0 <= newPC & newPC <= a1) then print("You are not allowed to jump to protected memory section") else PC = newPC;
+    if unprotected(PC) then {
+        if protected(newPC) then print("You are not allowed to jump to protected memory section") else PC = newPC;
     } else {
         PC = newPC;
-        if (newPC < a0 | newPC > a1) then reset_registers();
-    }
+        if unprotected(newPC) then reset_registers();
+    };
+    if PC == start_boundary then inc_PC();
 }
 
 /* EBREAK */
