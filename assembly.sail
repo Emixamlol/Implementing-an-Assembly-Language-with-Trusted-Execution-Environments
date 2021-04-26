@@ -17,7 +17,8 @@ function clause execute (RTYPE (rs2, rs1, rd, ADD)) = {
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     let result  = rs1_val + rs2_val in
-    wREG(rd) = result
+    wREG(rd) = result;
+    inc_PC();
 }
 
 /* AND */
@@ -31,7 +32,8 @@ function clause execute (RTYPE (rs2, rs1, rd, AND)) = {
     match bitwise_AND {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* OR */
@@ -45,7 +47,8 @@ function clause execute (RTYPE (rs2, rs1, rd, OR)) = {
     match bitwise_OR {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* XOR */
@@ -59,7 +62,8 @@ function clause execute (RTYPE (rs2, rs1, rd, XOR)) = {
     match bitwise_XOR {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* MUL */
@@ -72,7 +76,8 @@ function clause execute (RTYPE (rs2, rs1, rd, MUL)) = {
     let product = multiplicand * multiplier in
     let len = sizeof(xlen) - 1 in
     let result  = product[len .. 0] in
-    wREG(rd) = result
+    wREG(rd) = result;
+    inc_PC();
 }
 
 /* DIV */
@@ -85,7 +90,8 @@ function clause execute (RTYPE (rs2, rs1, rd, DIV)) = {
     let (div, rem) = dividend / divisor in
     let len = sizeof(xlen) - 1 in
     let result = div[len .. 0] in
-    wREG(rd) = result
+    wREG(rd) = result;
+    inc_PC();
 }
 
 /* REM */
@@ -98,7 +104,8 @@ function clause execute (RTYPE (rs2, rs1, rd, REM)) = {
     let (div, rem) = dividend / divisor in
     let len = sizeof(xlen) - 1 in
     let result = rem[len .. 0] in
-    wREG(rd) = result
+    wREG(rd) = result;
+    inc_PC();
 }
 
 /* I-TYPE instructions */
@@ -112,7 +119,8 @@ function clause execute (ITYPE (imm, rs1, rd, ADDI)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     let result  = rs1_val + imm_ext in
-    wREG(rd) = result
+    wREG(rd) = result;
+    inc_PC();
 }
 
 /* SLTI */
@@ -122,7 +130,8 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLTI) @ rd : 
 function clause execute (ITYPE (imm, rs1, rd, SLTI)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
-    if (rs1_val < imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0}
+    if (rs1_val < imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0};
+    inc_PC();
 }
 
 /* ANDI */
@@ -136,7 +145,8 @@ function clause execute (ITYPE (imm, rs1, rd, ANDI)) = {
     match bitwise_AND {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* ORI */
@@ -150,7 +160,8 @@ function clause execute (ITYPE (imm, rs1, rd, ORI)) = {
     match bitwise_OR {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* XORI */
@@ -164,7 +175,8 @@ function clause execute (ITYPE (imm, rs1, rd, XORI)) = {
     match bitwise_XOR {
         0b1 => wREG(rd) = 0b1,
         _   => wREG(rd) = 0b0
-    }
+    };
+    inc_PC();
 }
 
 /* JALR */
@@ -178,11 +190,11 @@ function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
         newPC : xlenbits = rs1_val + imm_ext;
         newPC[0] = bitzero;
         if (PC < a0 | PC > a1) then {
-            if (a0 <= newPC & newPC <= a1) then newPC = a0;
+            if (a0 <= newPC & newPC <= a1) then print("You are not allowed to jump to protected memory section") else PC = newPC;
         } else {
+            PC = newPC;
             if (newPC < a0 | newPC > a1) then reset_registers();
         }
-        PC = newPC;
     }
 }
 
@@ -198,6 +210,7 @@ function clause execute (ITYPE (imm, rs1, rd, LW)) = {
         let mem_val = read_mem(addr) in
         wREG(rd) = mem_val
     } else print("You are not allowed to read from protected memory section");
+    inc_PC();
 }
 
 /* SLLI (assert) */
@@ -207,7 +220,8 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLLI) @ rd : 
 function clause execute (ITYPE (imm, rs1, rd, SLLI)) = {
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
-    if (rs1_val == imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0}
+    if (rs1_val == imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0};
+    inc_PC();
 }
 
 /* LB (begin enclave) */
@@ -225,7 +239,7 @@ function clause execute (ITYPE (imm, rs1, rd, LB)) = {
             _   =>  inc_PC()
         }
     };
-    PC = a0; /* restore the program counter */
+    PC = a0 + 4; /* restore the program counter */
 }
 
 /* LH (end enclave) */
@@ -234,7 +248,8 @@ function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LH) @ 0b00000 @ 0b0
 
 function clause execute (ITYPE (imm, rs1, rd, LH)) = {
     PC = ra;
-    reset_registers(); 
+    reset_registers();
+    inc_PC();
 }
 
 /* S-TYPE instructions */
@@ -251,7 +266,8 @@ function clause execute (STYPE (imm2, rs2, rs1, imm1, SW)) = {
             let rs2_val = rREG(rs2) in
             write_mem(addr, rs2_val);
         } else print("You are not allowed to write to protected memory section");
-    }
+    };
+    inc_PC();
 }
 
 /* B-TYPE instructions */
@@ -292,6 +308,7 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0110111
 
 function clause execute (UTYPE (imm, rd, LUI)) = {
     wREG(rd) = imm @ sail_zeros(12);
+    inc_PC();
 }
 
 /* AUIPC */
@@ -301,6 +318,7 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0010111
 function clause execute (UTYPE (imm, rd, AUIPC)) = {
     let offset = imm @ sail_zeros(12) in
     wREG(rd) = PC + offset;
+    inc_PC();
 }
 
 /* J-TYPE instructions */
@@ -312,11 +330,12 @@ function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 
 function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
     wREG(rd) = PC + 4;
     let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
-    let newPC = PC + offset;
+    let newPC = PC + offset in
     if (PC < a0 | PC > a1) then {
-        if (a0 <= newPC & newPC <= a1) then PC = a0 else PC = newPC;
+        if (a0 <= newPC & newPC <= a1) then print("You are not allowed to jump to protected memory section") else PC = newPC;
     } else {
-        if (a0 <= newPC & newPC <= a1) then PC = newPC else {PC = newPC ; reset_registers()}
+        PC = newPC;
+        if (newPC < a0 | newPC > a1) then reset_registers();
     }
 }
 
