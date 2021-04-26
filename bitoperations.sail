@@ -57,7 +57,7 @@ function twos_complement(v) = {
     result
 }
 
-/* take the absolute value of or bitvector */
+/* take the absolute value of a bitvector */
 val abs : forall ('n : Int) , 'n > 1 . bits('n) -> bits('n)
 function abs(v) = {
     let msb = sizeof('n) - 1 in
