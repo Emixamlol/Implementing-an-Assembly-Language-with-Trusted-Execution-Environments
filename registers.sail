@@ -2,9 +2,12 @@ type xlen : Int = 32
 type xlenbits : Type = bits(xlen)
 type regbits : Type = bits(5)
 
-register PC : xlenbits /* Program Counter Register */
+/* special purpose registers */
+register PC : xlenbits              /* program counter */
+register start_boundary : xlenbits  /* start address of memory enclave */
+register end_boundary : xlenbits    /* end address of memory enclave */
 
-/* main registers */
+/* general purpose registers */
 register zero : xlenbits    /* hard-wired zero */
 register ra : xlenbits      /* return address */
 register sp : xlenbits      /* stack pointer */
@@ -15,10 +18,6 @@ register a2 : xlenbits
 register a3 : xlenbits
 
 let Xs : vector(8, dec, register(xlenbits)) = [ref a3, ref a2, ref a1, ref a0, ref gp, ref sp, ref ra, ref zero]
-
-/* automatically zero extend bitvectors when necessary */
-val cast extz : forall ('n 'm : Int) , 'm > 'n . (implicit('m), bits('n)) -> bits('m)
-function extz(m, xs) = sail_zero_extend(xs, m)
 
 /* method to sign-extend bitvector to size of xlen */
 val EXTS : forall ('n : Int) , 0 < 'n <= xlen  . bits('n) -> xlenbits
@@ -31,15 +30,22 @@ function add_to_PC(bytes) = {PC = PC + bytes}
 val inc_PC : unit -> unit effect {rreg, wreg}
 function inc_PC() = add_to_PC(4)
 
-/* read and write main registers */
+/* test if an address is in protected memory or not */
+val protected : xlenbits -> bool effect {rreg}
+function protected(addr) = {start_boundary <= addr & addr <= end_boundary}
+
+val unprotected : xlenbits -> bool effect {rreg}
+function unprotected(addr) = {addr < start_boundary | end_boundary < addr}
+
+/* read and write general purpose registers */
 val rREG : regbits -> xlenbits effect {rreg}
 function rREG(r) = let offset = r[2 .. 0] in (*Xs[unsigned(offset)])
 
 val wREG : (regbits, xlenbits) -> unit effect {wreg}
 function wREG(r, v) = {
     let offset = r[2 .. 0] in match offset {
-        0b0 => if (v == 0b0) then {(*Xs[0]) = 0b0} else print("Cannot overwrite hard-wired zero register"),
-        _   => (*Xs[unsigned(offset)]) = v
+        0b000   => if (v == 0b0) then {(*Xs[0]) = 0b0} else print("Cannot overwrite hard-wired zero register"),
+        _       => (*Xs[unsigned(offset)]) = v
     }
 }
 
@@ -56,7 +62,7 @@ val MEMw = {lem: "MEMw", coq: "MEMw", _: "write_ram"}: forall ('n 'm : Int) , 'n
 val write_mem : (xlenbits, xlenbits) -> unit effect {wmem}
 function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)), addr, data)
 
-/* reset registers (resets all but a3) */
+/* reset general purpose registers (resets all but a3) */
 val reset_registers : unit -> unit effect {wreg}
 function reset_registers() = {
     foreach (i from 0 to (length(Xs) - 2)) {
