@@ -2,7 +2,13 @@ default Order dec
 
 $include <prelude.sail>
 $include <elf.sail>
+
+/* automatically zero extend bitvectors when necessary */
+val cast extz : forall ('n 'm : Int) , 'm > 'n . (implicit('m), bits('n)) -> bits('m)
+function extz(m, xs) = sail_zero_extend(xs, m)
+
 $include "./print.sail"
+$include "./bitoperations.sail"
 $include "./registers.sail"
 $include "./assembly.sail"
 
