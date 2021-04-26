@@ -17,11 +17,10 @@ function fde_loop() = {
         match decoded_instruction {
             Some(EBREAK())  => continue_loop = false,
             Some(inst)      => execute(inst),
-            None()          => print("instruction is None()"),
-            _               => print("decoding the instruction resulted in something unexpected")
+            None()          => {print("instruction is None()") ; inc_PC()},
+            _               => {print("decoding the instruction resulted in something unexpected") ; continue_loop = false}
         };
         print("PC in fde_loop = ", PC);
-        inc_PC();
     }
 }
 
