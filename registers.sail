@@ -38,12 +38,24 @@ val unprotected : xlenbits -> bool effect {rreg}
 function unprotected(addr) = {addr < start_boundary | end_boundary < addr}
 
 /* read and write general purpose registers */
+val reg_offset : regbits -> bits(3)
+function reg_offset(r) = {
+    match r {
+        reg if 0b00000 <= reg & reg <= 0b00011 => r[2 .. 0],
+        0b01010 => 0b100,
+        0b01011 => 0b101,
+        0b01100 => 0b110,
+        0b01101 => 0b111,
+        _       => 0b000
+    }
+}
+
 val rREG : regbits -> xlenbits effect {rreg}
-function rREG(r) = let offset = r[2 .. 0] in (*Xs[unsigned(offset)])
+function rREG(r) = let offset = reg_offset(r) in (*Xs[unsigned(offset)])
 
 val wREG : (regbits, xlenbits) -> unit effect {wreg}
 function wREG(r, v) = {
-    let offset = r[2 .. 0] in match offset {
+    let offset = reg_offset(r) in match offset {
         0b000   => if (v == 0b0) then {(*Xs[0]) = 0b0} else print("Cannot overwrite hard-wired zero register"),
         _       => (*Xs[unsigned(offset)]) = v
     }
@@ -65,7 +77,7 @@ function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)),
 /* reset general purpose registers (resets all but a3) */
 val reset_registers : unit -> unit effect {wreg}
 function reset_registers() = {
-    foreach (i from 0 to 6) {
+    foreach (i from 1 to 6) {
         (*Xs[i]) = 0b0;
     }
 }
