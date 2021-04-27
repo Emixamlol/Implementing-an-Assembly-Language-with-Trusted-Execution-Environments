@@ -65,7 +65,7 @@ function write_mem(addr, data) = MEMw(sizeof(xlen), 4, sail_zeros(sizeof(xlen)),
 /* reset general purpose registers (resets all but a3) */
 val reset_registers : unit -> unit effect {wreg}
 function reset_registers() = {
-    foreach (i from 0 to (length(Xs) - 2)) {
+    foreach (i from 0 to 6) {
         (*Xs[i]) = 0b0;
     }
 }
@@ -74,7 +74,7 @@ function reset_registers() = {
 val obj_dump : unit -> unit effect {rreg}
 
 function obj_dump() = {
-    foreach (i from 0 to (length(Xs) - 1)) {
+    foreach (i from 0 to 7) {
         let content = (*Xs[i]);
         reg_name : string = match i {
             0   => "zero",
