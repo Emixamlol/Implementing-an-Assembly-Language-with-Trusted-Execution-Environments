@@ -5,6 +5,8 @@ scattered union ast /* begin scattered ast definition */
 val decode : xlenbits -> option(ast) effect pure /* decode function */
 val execute : ast -> unit effect {rreg, wreg, rmem, wmem} /* execute function */
 
+function printe(str) : string -> unit = {print("executing " + str)}
+
 /* R-TYPE instructions */
 union clause ast = RTYPE : (regbits, regbits, regbits, rop)
 
@@ -13,6 +15,7 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AD
     = Some(RTYPE(rs2, rs1, rd, ADD))
 
 function clause execute (RTYPE (rs2, rs1, rd, ADD)) = {
+    printe("add");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     let result  = rs1_val + rs2_val in
@@ -25,6 +28,7 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(AN
     = Some(RTYPE(rs2, rs1, rd, AND))
 
 function clause execute (RTYPE (rs2, rs1, rd, AND)) = {
+    printe("and");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     let bitwise_AND = rs1_val & rs2_val in
@@ -40,6 +44,7 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(OR
     = Some(RTYPE(rs2, rs1, rd, OR))
 
 function clause execute (RTYPE (rs2, rs1, rd, OR)) = {
+    printe("or");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     let bitwise_OR = rs1_val | rs2_val in
@@ -55,6 +60,7 @@ function clause decode 0b0000000 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(XO
     = Some(RTYPE(rs2, rs1, rd, XOR))
 
 function clause execute (RTYPE (rs2, rs1, rd, XOR)) = {
+    printe("xor");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     let bitwise_XOR = rs1_val ^ rs2_val in
@@ -70,6 +76,7 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(MU
     = Some(RTYPE(rs2, rs1, rd, MUL))
 
 function clause execute (RTYPE (rs2, rs1, rd, MUL)) = {
+    printe("mul");
     let multiplicand = rREG(rs1) in
     let multiplier = rREG(rs2) in
     let product = multiplicand * multiplier in
@@ -84,6 +91,7 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(DI
     = Some(RTYPE(rs2, rs1, rd, DIV))
 
 function clause execute (RTYPE (rs2, rs1, rd, DIV)) = {
+    printe("div");
     let dividend = rREG(rs1) in
     let divisor = rREG(rs2) in
     let (div, rem) = dividend / divisor in
@@ -98,6 +106,7 @@ function clause decode 0b0000001 @ rs2 : regbits @ rs1 : regbits @ encdec_rop(RE
     = Some(RTYPE(rs2, rs1, rd, REM))
 
 function clause execute (RTYPE (rs2, rs1, rd, REM)) = {
+    printe("rem");
     let dividend = rREG(rs1) in
     let divisor = rREG(rs2) in
     let (div, rem) = dividend / divisor in
@@ -115,6 +124,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ADDI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, ADDI))
 
 function clause execute (ITYPE (imm, rs1, rd, ADDI)) = {
+    printe("addi");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     let result  = rs1_val + imm_ext in
@@ -127,6 +137,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLTI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, SLTI))
 
 function clause execute (ITYPE (imm, rs1, rd, SLTI)) = {
+    printe("slti");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     if (rs1_val < imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0};
@@ -138,6 +149,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ANDI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, ANDI))
 
 function clause execute (ITYPE (imm, rs1, rd, ANDI)) = {
+    printe("andi");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     let bitwise_AND = rs1_val & imm_ext in
@@ -153,6 +165,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(ORI) @ rd : r
     = Some(ITYPE(imm, rs1, rd, ORI))
 
 function clause execute (ITYPE (imm, rs1, rd, ORI)) = {
+    printe("ori");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     let bitwise_OR = rs1_val | imm_ext in
@@ -168,6 +181,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(XORI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, XORI))
 
 function clause execute (ITYPE (imm, rs1, rd, XORI)) = {
+    printe("xori");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     let bitwise_XOR = rs1_val ^ imm_ext in
@@ -183,6 +197,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(JALR) @ rd : 
     = Some(ITYPE(imm, rs1, rd, JALR))
 
 function clause execute (ITYPE (imm, rs1, rd, JALR)) = {
+    printe("jalr");
     wREG(rd) = PC + 4;
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in {
@@ -203,6 +218,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(LW) @ rd : re
     = Some(ITYPE(imm, rs1, rd, LW))
 
 function clause execute (ITYPE (imm, rs1, rd, LW)) = {
+    printe("lw");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in 
     let addr    = rs1_val + imm_ext in
@@ -218,6 +234,7 @@ function clause decode imm : bits(12) @ rs1 : regbits @ encdec_iop(SLLI) @ rd : 
     = Some(ITYPE(imm, rs1, rd, SLLI))
 
 function clause execute (ITYPE (imm, rs1, rd, SLLI)) = {
+    printe("assert");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm) in
     if (rs1_val == imm_ext) then {wREG(rd) = 0b1} else {wREG(rd) = 0b0};
@@ -229,6 +246,7 @@ function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LB) @ 0b00000 @ 0b0
     = Some(ITYPE(imm, 0b0, 0b0, LB))
 
 function clause execute (ITYPE (imm, rs1, rd, LB)) = {
+    printe("begin enclave");
     start_boundary = PC; /* save the program counter which currently contains the start-address of the enclave */
     continue_loop : bool = true;
     while (continue_loop) do {
@@ -247,6 +265,7 @@ function clause decode imm : bits(12) @ 0b00000 @ encdec_iop(LH) @ 0b00000 @ 0b0
     = Some(ITYPE(imm, 0b0, 0b0, LH))
 
 function clause execute (ITYPE (imm, rs1, rd, LH)) = {
+    printe("end enclave");
     PC = ra;
     reset_registers();
     inc_PC();
@@ -259,6 +278,7 @@ function clause decode imm2 : bits(7) @ rs2 : regbits @ rs1 : regbits @ encdec_s
     = Some(STYPE(imm2, rs2, rs1, imm1, SW))
 
 function clause execute (STYPE (imm2, rs2, rs1, imm1, SW)) = {
+    printe("sw");
     let rs1_val = rREG(rs1) in
     let imm_ext = EXTS(imm2 @ imm1) in
     let addr    = rs1_val + imm_ext in {
@@ -278,6 +298,7 @@ function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : r
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BEQ))
 
 function clause execute (BTYPE (imm4, imm2, rs2, rs1, imm1, imm3, BEQ)) = {
+    printe("beq");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     if (rs1_val == rs2_val) then {
@@ -291,6 +312,7 @@ function clause decode imm4 : bits(1) @ imm2 : bits(6) @ rs2 : regbits @ rs1 : r
     = Some(BTYPE(imm4, imm2, rs2, rs1, imm1, imm3, BNE))
 
 function clause execute (BTYPE (imm4, imm2, rs2, rs1, imm1, imm3, BNE)) = {
+    printe("bne");
     let rs1_val = rREG(rs1) in
     let rs2_val = rREG(rs2) in
     if (rs1_val != rs2_val) then {
@@ -307,6 +329,7 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0110111
     = Some(UTYPE(imm, rd, LUI))
 
 function clause execute (UTYPE (imm, rd, LUI)) = {
+    printe("lui");
     wREG(rd) = imm @ sail_zeros(12);
     inc_PC();
 }
@@ -316,6 +339,7 @@ function clause decode imm : bits(20) @ rd : regbits @ 0b0010111
     = Some(UTYPE(imm, rd, AUIPC))
 
 function clause execute (UTYPE (imm, rd, AUIPC)) = {
+    printe("auipc");
     let offset = imm @ sail_zeros(12) in
     wREG(rd) = PC + offset;
     inc_PC();
@@ -328,6 +352,7 @@ function clause decode imm4 : bits(1) @ imm1 : bits(10) @ imm2 : bits(1) @ imm3 
     = Some(JTYPE(imm4, imm1, imm2, imm3, rd, JAL))
 
 function clause execute (JTYPE (imm4, imm1, imm2, imm3, rd, JAL)) = {
+    printe("jal");
     wREG(rd) = PC + 4;
     let offset = EXTS(imm4 @ imm3 @ imm2 @ imm1) in
     let newPC = PC + offset in
